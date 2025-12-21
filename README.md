@@ -23,22 +23,6 @@ with a single, centralized, real-time ERP-backed application for apparel busines
 **ERP-first design, UI second.**
 Every customer action triggers a business document in the backend.
 
----
-
-## 🏗️ System Architecture
-
-```mermaid
-graph TD
-    A[Customer UI (Shop / Cart / Checkout)] --> B[Express Backend (ERP Business Logic)]
-    B --> C[PostgreSQL (Single Source of Truth)]
-    C --> B
-    B --> D[Admin ERP Dashboard (Operations & Reports)]
-```
-
-- **Customer UI**: Shop, Cart, Checkout
-- **Backend**: Express.js (ERP Logic)
-- **Database**: PostgreSQL (Single Source of Truth)
-- **Admin Dashboard**: Operations & Reports
 
 ---
 
