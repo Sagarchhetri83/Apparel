@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:4000/offers';
+const API_URL = 'http://localhost:4001/offers';
 
 export const OfferService = {
     async getAll() {

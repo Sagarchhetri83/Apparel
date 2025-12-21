@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { UserService } from '../api/users.api';
+import { AuthService } from '../api/auth.api';
 
 const AuthContext = createContext();
 
@@ -8,19 +8,28 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('apparel_user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
+        const initAuth = async () => {
+            const token = localStorage.getItem('apparel_token');
+            const storedUser = localStorage.getItem('apparel_user');
+
+            if (token && storedUser) {
+                // Optionally verify token validity here by calling getProfile
+                setUser(JSON.parse(storedUser));
+            }
+            setLoading(false);
+        };
+        initAuth();
     }, []);
 
     const login = async (email, password) => {
         try {
-            const userData = await UserService.login(email, password);
-            setUser(userData);
-            localStorage.setItem('apparel_user', JSON.stringify(userData));
-            return userData;
+            const { token, user } = await AuthService.login(email, password);
+
+            setUser(user);
+            localStorage.setItem('apparel_token', token);
+            localStorage.setItem('apparel_user', JSON.stringify(user));
+
+            return user;
         } catch (error) {
             throw error;
         }
@@ -29,6 +38,7 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         setUser(null);
         localStorage.removeItem('apparel_user');
+        localStorage.removeItem('apparel_token');
     };
 
     return (

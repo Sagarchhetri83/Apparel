@@ -1,0 +1,81 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("customer") // admin | customer
+  contactId Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  saleOrders SaleOrder[]
+}
+
+model Product {
+  id         Int     @id @default(autoincrement())
+  name       String
+  stock      Int
+  price      Float
+  published  Boolean
+  product_category String @default("men") // men / women / children
+  product_type     String @default("shirt") // shirt / tshirt / pants
+  image            String? // URL to image
+  createdAt  DateTime @default(now())
+
+  saleOrderItems SaleOrderItem[]
+}
+
+
+
+model SaleOrder {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  status    String   // DRAFT | CONFIRMED | DONE
+  total     Float    @default(0)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  items     SaleOrderItem[]
+  invoice   Invoice?
+}
+
+model SaleOrderItem {
+  id          Int      @id @default(autoincrement())
+  saleOrderId Int
+  productId   Int
+  quantity    Int
+  unitPrice   Float
+
+  saleOrder SaleOrder @relation(fields: [saleOrderId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+}
+
+model Invoice {
+  id        Int      @id @default(autoincrement())
+  saleId    Int      @unique
+  total     Float
+  status    String   // DRAFT | PAID | PENDING | OVERDUE
+  createdAt DateTime @default(now())
+
+  sale      SaleOrder @relation(fields: [saleId], references: [id])
+  payment   Payment?
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  invoiceId Int      @unique
+  amount    Float
+  method    String
+  paidAt    DateTime @default(now())
+
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+}

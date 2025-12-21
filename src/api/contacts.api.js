@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:4000/contacts';
+const API_URL = 'http://localhost:4001/contacts';
 
 export const ContactService = {
     async getAll() {

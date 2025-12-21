@@ -1,25 +1,46 @@
-const API_URL = 'http://localhost:4000/sales';
+const API_URL = 'http://localhost:4001';
 
 export const SalesService = {
-    async createOrder(orderData) {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
+    // Get all sales (Admin)
+    async getAll() {
+        const token = localStorage.getItem('apparel_token');
+        const response = await fetch(`${API_URL}/sales`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
         const result = await response.json();
+        if (result.success) return result.data;
+        throw new Error(result.message);
+    },
+
+    // Authenticated checkout
+    async checkout(items, token) {
+        const response = await fetch(`${API_URL}/sales/checkout`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ items })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
         return result.data;
     },
 
-    async getMyOrders(contactId) {
-        const response = await fetch(`${API_URL}/customer/${contactId}`);
+    // Process payment
+    async payInvoice(invoiceId, amount, method, token) {
+        const response = await fetch(`${API_URL}/payments/invoice/${invoiceId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ amount, method })
+        });
         const result = await response.json();
-        return result.data;
-    },
-
-    async getAll() {
-        const response = await fetch(API_URL);
-        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
         return result.data;
     }
 };

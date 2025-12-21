@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 const Login = () => {
     const [email, setEmail] = useState('admin@apparel.com');
@@ -90,6 +90,14 @@ const Login = () => {
                             </button>
                         </div>
                     </form>
+
+                    <div className="mt-6">
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white text-gray-500">
+                                New here? <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">Create an account</Link>
+                            </span>
+                        </div>
+                    </div>
 
                     <div className="mt-6">
                         <div className="relative">

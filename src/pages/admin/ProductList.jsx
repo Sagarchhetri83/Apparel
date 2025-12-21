@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Added import
 import { ProductService } from '../../api/products.api';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 
 const ProductList = () => {
+    const navigate = useNavigate(); // Hook usage
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,7 +16,8 @@ const ProductList = () => {
     const loadProducts = async () => {
         try {
             const data = await ProductService.getAll(true);
-            setProducts(data);
+            console.log('Admin loaded products:', data);
+            setProducts(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Failed to load products', error);
         } finally {
@@ -32,15 +35,18 @@ const ProductList = () => {
     };
 
     const filteredProducts = products.filter(p =>
-        p.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.product_category.toLowerCase().includes(searchTerm.toLowerCase())
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.product_category?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Products</h1>
-                <button className="btn btn-primary">
+                <button
+                    onClick={() => navigate('/admin/products/new')}
+                    className="btn btn-primary"
+                >
                     <Plus className="h-4 w-4 mr-2" />
                     New Product
                 </button>
@@ -86,7 +92,7 @@ const ProductList = () => {
                                                     <img className="h-10 w-10 rounded-md object-cover" src={product.image} alt="" />
                                                 </div>
                                                 <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900">{product.product_name}</div>
+                                                    <div className="text-sm font-medium text-gray-900">{product.name}</div>
                                                     <div className="text-xs text-gray-500">{product.product_type}</div>
                                                 </div>
                                             </div>
@@ -95,10 +101,10 @@ const ProductList = () => {
                                             {product.product_category}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            ₹{product.sales_price}
+                                            ₹{product.price}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {product.current_stock} Units
+                                            {product.stock} Units
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button

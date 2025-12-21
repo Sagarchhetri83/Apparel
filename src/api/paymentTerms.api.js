@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:4000/payment-terms';
+const API_URL = 'http://localhost:4001/payment-terms';
 
 export const PaymentTermService = {
     async getAll() {

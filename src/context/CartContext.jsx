@@ -40,7 +40,7 @@ export const CartProvider = ({ children }) => {
         setCoupon(couponData);
     };
 
-    const cartTotal = cart.reduce((sum, item) => sum + (item.sales_price * item.quantity), 0);
+    const cartTotal = cart.reduce((sum, item) => sum + ((item.price || item.sales_price || 0) * item.quantity), 0);
 
     // Calculate discount
     let discountAmount = 0;

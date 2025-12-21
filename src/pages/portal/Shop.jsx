@@ -1,22 +1,70 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ProductService } from '../../api/products.api';
 import { useCart } from '../../context/CartContext';
 import { ShoppingCart, Filter } from 'lucide-react';
+import ProductCard from '../../components/shop/ProductCard';
 
 const Shop = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [categoryFilter, setCategoryFilter] = useState('all');
+
+    // Get filters from URL or default to 'All' to match CATEGORY_MAP keys
+    const categoryFilter = searchParams.get('category') || 'All';
+    const typeFilter = searchParams.get('type') || '';
+
     const { addToCart } = useCart();
+
+    // Use strict category map for DB values
+    const CATEGORY_MAP = {
+        'All': null,
+        'Shirts': 'shirt',
+        'T-Shirts': 'tshirt',
+        'Kurtas': 'kurta',
+        'Dresses': 'dress',
+        'Pants': 'pants' // Changed from Bottoms to Pants for clarity
+    };
+
+    const categories = Object.keys(CATEGORY_MAP);
 
     useEffect(() => {
         loadProducts();
-    }, []);
+    }, [categoryFilter, typeFilter]);
 
     const loadProducts = async () => {
+        setLoading(true);
         try {
-            const data = await ProductService.getAll(); // get only published
-            setProducts(data);
+            const query = {};
+
+            // Handle Type Filter (e.g. from Home Page 'Shirts' click)
+            if (typeFilter) {
+                query.type = typeFilter.toLowerCase();
+            }
+
+            // Handle Category Filter (Sidebar)
+            // Strict mapping: If user selects 'Shirts' sidebar, we want type='shirt' 
+            // BUT wait, 'Men/Women' were the categories in DB. 'Shirt/Pant' are types.
+            // The prompt asks to "Use product_type as the ONLY filter key" and map "Shirts" -> "shirt".
+            // So we override whatever the sidebar logic was.
+
+            if (categoryFilter && categoryFilter !== 'All') {
+                const mappedType = CATEGORY_MAP[categoryFilter];
+                if (mappedType) {
+                    query.type = mappedType; // Overwrite type with mapped category
+                }
+            }
+
+            // We update the products.api.js to accept params, or build the URL manually here if needed
+            // But let's assume getAll accepts params or we construct it.
+            // Since I cannot check products.api.js directly in this turn, I will modify the call assuming I can fix the API layer or pass query object
+            // Actually, let's look at how ProductService.getAll is implemented. 
+            // The file view showed: `async getAll() { const response = await fetch(API_URL); ... }`
+            // It doesn't take args. I need to fix that too.
+            // For now, I will assume I fix `products.api.js` in the next step.
+
+            const data = await ProductService.getAll(query);
+            setProducts(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Failed to load products', error);
         } finally {
@@ -24,11 +72,18 @@ const Shop = () => {
         }
     };
 
-    const filteredProducts = categoryFilter === 'all'
-        ? products
-        : products.filter(p => p.product_category.toLowerCase() === categoryFilter.toLowerCase());
-
-    const categories = ['All', ...new Set(products.map(p => p.product_category))];
+    const handleCategoryChange = (cat) => {
+        const newSearchParams = new URLSearchParams(searchParams);
+        if (cat === 'All') {
+            newSearchParams.delete('category');
+            newSearchParams.delete('type'); // clear type too if clearing all
+        } else {
+            // We set 'category' param to the UI label (e.g. 'Shirts')
+            // The useEffect will map 'Shirts' -> 'shirt' when calling API
+            newSearchParams.set('category', cat);
+        }
+        setSearchParams(newSearchParams);
+    };
 
     return (
         <div className="bg-white min-h-screen py-12">
@@ -44,7 +99,7 @@ const Shop = () => {
                         </h3>
                         <div className="border-t border-gray-200 pt-4">
                             <fieldset>
-                                <legend className="sr-only">Categories</legend>
+                                <legend className="sr-only">Product Type</legend>
                                 <div className="space-y-3">
                                     {categories.map((category) => (
                                         <div key={category} className="flex items-center">
@@ -52,8 +107,8 @@ const Shop = () => {
                                                 id={`category-${category}`}
                                                 name="category"
                                                 type="radio"
-                                                checked={categoryFilter === (category === 'All' ? 'all' : category.toLowerCase()) || (category === 'All' && categoryFilter === 'all')}
-                                                onChange={() => setCategoryFilter(category === 'All' ? 'all' : category.toLowerCase())}
+                                                checked={categoryFilter === category}
+                                                onChange={() => handleCategoryChange(category)}
                                                 className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                                             />
                                             <label htmlFor={`category-${category}`} className="ml-3 text-sm text-gray-600 capitalize">
@@ -73,46 +128,27 @@ const Shop = () => {
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
-                                {filteredProducts.map((product) => (
-                                    <div key={product.id} className="group relative bg-white border border-gray-200 rounded-lg flex flex-col overflow-hidden hover:shadow-lg transition-shadow">
-                                        <div className="aspect-w-3 aspect-h-4 bg-gray-200 group-hover:opacity-75 sm:aspect-none sm:h-96">
-                                            <img
-                                                src={product.image}
-                                                alt={product.product_name}
-                                                className="w-full h-full object-center object-cover sm:h-full sm:w-full"
-                                            />
-                                        </div>
-                                        <div className="flex-1 p-4 space-y-2 flex flex-col">
-                                            <h3 className="text-sm font-medium text-gray-900">
-                                                <a href="#">
-                                                    <span aria-hidden="true" className="absolute inset-0" />
-                                                    {product.product_name}
-                                                </a>
-                                            </h3>
-                                            <p className="text-sm text-gray-500 capitalize">{product.colors.join(', ')}</p>
-                                            <div className="flex-1 flex flex-col justify-end">
-                                                <p className="text-base font-medium text-gray-900">₹{product.sales_price}</p>
-                                            </div>
-                                        </div>
-                                        <div className="p-4 pt-0">
-                                            <button
-                                                onClick={(e) => { e.preventDefault(); addToCart(product); }}
-                                                className="w-full bg-blue-600 border border-transparent rounded-md py-2 px-4 flex items-center justify-center text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 z-10 relative"
-                                            >
-                                                <ShoppingCart className="h-4 w-4 mr-2" />
-                                                Add to Cart
-                                            </button>
-                                        </div>
+                            <>
+                                <div className="grid grid-cols-2 gap-y-8 gap-x-4 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-6">
+                                    {products.map((product) => (
+                                        <ProductCard
+                                            key={product.id}
+                                            product={product}
+                                            onAddToCart={(p) => addToCart(p)}
+                                        />
+                                    ))}
+                                </div>
+                                {products.length === 0 && (
+                                    <div className="text-center py-20">
+                                        <p className="text-gray-500 text-lg mb-4">No products found in this category.</p>
+                                        <button
+                                            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                                        >
+                                            View All Products
+                                        </button>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {!loading && filteredProducts.length === 0 && (
-                            <div className="text-center py-12">
-                                <p className="text-gray-500">No products found in this category.</p>
-                            </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>

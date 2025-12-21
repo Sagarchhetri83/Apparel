@@ -1,55 +1,38 @@
 const express = require('express');
 const router = express.Router();
-const sales = require('../data/sales');
-const { generateId } = require('../utils/id');
-const InvoiceService = require('../services/invoice.service');
-const CouponService = require('../services/coupon.service');
-
-const AUTOMATIC_INVOICING = true;
+const SalesService = require('../services/sales.service');
+const authMiddleware = require('../middlewares/auth.middleware');
 
 // GET /sales
-router.get('/', (req, res) => {
-    res.json({ success: true, data: sales });
+// Admin only - Get all sales
+router.get('/', authMiddleware, async (req, res) => {
+    try {
+        const sales = await SalesService.getAll();
+        res.json({ success: true, data: sales });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
-// POST /sales
-router.post('/', (req, res) => {
-    const newSale = {
-        id: generateId(sales),
-        name: `SO${String(generateId(sales)).padStart(3, '0')}`,
-        date: new Date().toISOString(),
-        state: 'sale', // confirmed immediately for portal
-        ...req.body
-    };
+// POST /sales/checkout
+// Authenticated Customer - Create order
+router.post('/checkout', authMiddleware, async (req, res) => {
+    try {
+        const { items } = req.body;
+        // JWT payload has userId, not id
+        console.log('Checkout User Payload:', req.user);
+        const userId = req.user.userId || req.user.id;
 
-    // Handle Coupon usage
-    if (req.body.coupon_code) {
-        try {
-            CouponService.markAsUsed(req.body.coupon_code);
-            newSale.coupon_code = req.body.coupon_code;
-        } catch (e) {
-            console.error("Coupon mark used failed", e);
+        if (!items || items.length === 0) {
+            return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
+
+        const result = await SalesService.createSaleOrder(userId, items);
+        res.status(201).json({ success: true, data: result });
+    } catch (error) {
+        console.error('Checkout Error:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
-
-    sales.push(newSale); // Push simplified
-
-    if (AUTOMATIC_INVOICING) {
-        try {
-            InvoiceService.createFromSale(newSale.id);
-        } catch (e) {
-            console.error("Auto Invoice Failed:", e);
-        }
-    }
-
-    res.status(201).json({ success: true, data: newSale });
-});
-
-// GET /sales/customer/:contactId
-router.get('/customer/:contactId', (req, res) => {
-    const contactId = Number(req.params.contactId);
-    const customerSales = sales.filter(s => s.customer_id === contactId);
-    res.json({ success: true, data: customerSales });
 });
 
 module.exports = router;

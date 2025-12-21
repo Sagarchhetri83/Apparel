@@ -1,0 +1,1 @@
+Successfully created product: { id: 1, name: 'Test Shirt', stock: 50, price: 1200, published: true }
