@@ -1,4 +1,4 @@
-# 👕 ApparelDesk Project
+#  ApparelDesk Project
 ### ERP-Integrated Apparel Commerce System
 
 ApparelDesk is a modular, ERP-driven apparel management platform that combines a modern customer shopping experience with a full backend business workflow system inspired by Odoo-style ERP design.
@@ -7,7 +7,7 @@ Unlike traditional e-commerce applications, ApparelDesk focuses on sales-to-cash
 
 ---
 
-## 🎯 Project Objective
+##  Project Objective
 
 To replace:
 - Manual billing
@@ -18,7 +18,7 @@ with a single, centralized, real-time ERP-backed application for apparel busines
 
 ---
 
-## 🧠 Core Philosophy
+##  Core Philosophy
 
 **ERP-first design, UI second.**
 Every customer action triggers a business document in the backend.
@@ -26,7 +26,7 @@ Every customer action triggers a business document in the backend.
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 ### Frontend
 - **React.js (Vite)**
@@ -50,7 +50,7 @@ Every customer action triggers a business document in the backend.
 
 ---
 
-## 📌 Traceability Table (Features → Modules)
+##  Traceability Table (Features → Modules)
 
 | Feature / API / Page | Module |
 | :--- | :--- |
@@ -76,7 +76,7 @@ Every customer action triggers a business document in the backend.
 
 ---
 
-## 👤 Authentication Module
+##  Authentication Module
 
 ### Features
 - Customer signup
@@ -90,8 +90,7 @@ Every customer action triggers a business document in the backend.
 - JWT required for checkout & admin access
 
 ---
-
-## 🛍️ Customer Portal Modules
+##  Customer Portal Modules
 
 ### 1️⃣ Landing Page
 - Fashion-brand inspired UI (Meesho / Zara style)
@@ -144,7 +143,7 @@ Cart → Sale Order → Invoice → Payment → Stock Update
 - Active customers
 - Low stock products
 
-📌 *All metrics come from PostgreSQL.*
+ *All metrics come from PostgreSQL.*
 
 ### 2️⃣ Product Management
 **Features**
@@ -174,7 +173,7 @@ Cart → Sale Order → Invoice → Payment → Stock Update
 
 ---
 
-## 🗃️ Database Design (PostgreSQL)
+##  Database Design (PostgreSQL)
 
 ### Core Tables
 - `User`
@@ -191,7 +190,7 @@ Cart → Sale Order → Invoice → Payment → Stock Update
 
 ---
 
-## 🔁 Order-to-Cash Workflow (Core ERP Logic)
+##  Order-to-Cash Workflow (Core ERP Logic)
 
 1. Admin adds & publishes product
 2. Customer sees product instantly
@@ -205,7 +204,7 @@ Cart → Sale Order → Invoice → Payment → Stock Update
 
 ---
 
-## 🤖 AI-Ready Architecture (Planned)
+##  AI-Ready Architecture (Planned)
 
 ApparelDesk is designed to support Agentic AI workflows, including:
 - AI inventory forecasting
@@ -216,8 +215,7 @@ ApparelDesk is designed to support Agentic AI workflows, including:
 No architectural changes required to add AI agents.
 
 ---
-
-## 🧪 Local Setup (Developer)
+## Local Setup (Developer)
 
 ### Backend
 ```bash
